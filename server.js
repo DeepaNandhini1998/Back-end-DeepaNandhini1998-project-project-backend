@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const model = require("./user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+var nodemailer = require('nodemailer');
 
 app.use(cors());
 app.use(express.json());
@@ -86,6 +87,37 @@ app.get("/api/dashboard", async (req, res) => {
     res.json({ status: "ok", goal: user.goal });
   } else {
     res.json("Invalid Token");
+  }
+});
+
+app.post("/api/sendMail", async (req, res) => {
+  try {
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAILID,
+        pass: process.env.EMAILPASSWORD
+      }
+    });
+    
+    var mailOptions = {
+      from: process.env.EMAILID,
+      to: req.body.mail_to,
+      subject: req.body.mail_subject,
+      text: req.body.mail_message
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        res.json({ status: "fail" });
+        console.log(error);
+      } else {
+        res.json({ status: "ok" });
+        console.log('Email sent: ' + info.response);
+      }
+    });
+  } catch (err) {
+    res.json({ status: "Could not send mail", error:err });
   }
 });
 
