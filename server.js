@@ -99,7 +99,6 @@ app.post("/api/sendMail", async (req, res) => {
         pass: process.env.EMAILPASSWORD
       }
     });
-    
     var mailOptions = {
       from: process.env.EMAILID,
       to: req.body.mail_to,
@@ -117,6 +116,7 @@ app.post("/api/sendMail", async (req, res) => {
       }
     });
   } catch (err) {
+    console.log(err)
     res.json({ status: "Could not send mail", error:err });
   }
 });
