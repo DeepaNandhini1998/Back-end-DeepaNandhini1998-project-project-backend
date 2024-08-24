@@ -92,29 +92,35 @@ app.get("/api/dashboard", async (req, res) => {
 
 app.post("/api/sendMail", async (req, res) => {
   try {
-    var transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAILID,
-        pass: process.env.EMAILPASSWORD
-      }
-    });
-    var mailOptions = {
-      from: process.env.EMAILID,
-      to: req.body.mail_to,
-      subject: req.body.mail_subject,
-      text: req.body.mail_message
-    };
-    
-    transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        res.json({ status: "fail" });
-        console.log(error);
-      } else {
-        res.json({ status: "ok" });
-        console.log('Email sent: ' + info.response);
-      }
-    });
+    const token = req.headers["x-access-token"];
+    const isValidToken = await jwt.verify(token, "secret123");
+
+    if (isValidToken) {
+      var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAILID,
+          pass: process.env.EMAILPASSWORD
+        }
+      });
+      var mailOptions = {
+        from: process.env.EMAILID,
+        to: req.body.mail_to,
+        subject: req.body.mail_subject,
+        text: req.body.mail_message
+      };
+      
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          res.json({ status: "fail" });
+          console.log(error);
+        } else {
+          res.json({ status: "ok" });
+          console.log('Email sent: ' + info.response);
+        }
+      });
+  } else
+   res.json("Invalid Token");
   } catch (err) {
     console.log(err)
     res.json({ status: "Could not send mail", error:err });
